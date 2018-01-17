@@ -1,0 +1,8 @@
+{
+  "name": "Indicator for Intel CPU",
+  "description": "Shows frequency and temperature of Intel CPUs with intel_pstate driver.",
+  "uuid": "gs-pstatectl@tiliado.eu",
+  "shell-version": [
+    "3.26.0"
+  ]
+}
