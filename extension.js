@@ -19,9 +19,8 @@ function init () {  // eslint-disable-line no-unused-vars
 function enable () {  // eslint-disable-line no-unused-vars
   menu = new PstatectlMenu()
   slider = new PstatectlSlider(1)
-  indicator = Main.panel.addToStatusArea('pstatectl', new PstatectlButton(menu, slider), 0, 'right')
   updater = new Updater(menu, slider)
-  updater.start()
+  indicator = Main.panel.addToStatusArea('pstatectl', new PstatectlButton(menu, slider, updater), 0, 'right')
 }
 
 function disable () {  // eslint-disable-line no-unused-vars
@@ -47,10 +46,18 @@ class Updater {
   }
 
   start () {
+    this.update()
     this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
       this.update()
       return true
     })
+  }
+
+  stop () {
+    if (this._timeoutId) {
+      GLib.Source.remove(this._timeoutId)
+      this._timeoutId = null
+    }
   }
 
   update () {
@@ -112,13 +119,14 @@ class Updater {
   }
 
   destroy () {
-    GLib.Source.remove(this._timeoutId)
+    this.stop()
   }
 }
 
 class PstatectlButton extends PanelMenu.Button {
-  constructor (menu, slider) {
+  constructor (menu, slider, updater) {
     super(0.0, 'Pstatectl Button', false)
+    this._updater = updater
     this._indicator = new St.BoxLayout()
     this.actor.add_child(this._indicator)
     this._indicator_icon = new St.Icon({
@@ -128,10 +136,20 @@ class PstatectlButton extends PanelMenu.Button {
     this._indicator.add_child(this._indicator_icon)
     this.menu.addMenuItem(menu)
     this.menu.addMenuItem(slider)
+    this._notify_visible = this.menu.actor.connect('notify::visible', this.onVisibleChanged.bind(this))
   }
 
   destroy () {
+    this.menu.actor.connect(this._notify_visible)
     super.destroy()
+  }
+
+  onVisibleChanged () {
+    if (this.menu.actor.is_visible()) {
+      this._updater.start()
+    } else {
+      this._updater.stop()
+    }
   }
 }
 
