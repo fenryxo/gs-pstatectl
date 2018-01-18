@@ -1,3 +1,7 @@
+/* Copyright 2018 Jiří Janoušek <janousek.jiri@gmail.com>
+ * Licensed under BSD-2-Clause - see the LICENSE file.
+ */
+
 /* global imports */
 'use strict'
 
